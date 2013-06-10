@@ -1,0 +1,8 @@
+{
+    "/":     "redirect:/save-user-address.htm",
+    "/save-user-address.htm"        :  {
+     "GET"  : "com.threewks.restdelivery.web.SaveUserAddressController.handleGet",
+     "POST"  : "com.threewks.restdelivery.web.SaveUserAddressController.handlePost"
+    },
+    "/favicon.ico": "static"
+}

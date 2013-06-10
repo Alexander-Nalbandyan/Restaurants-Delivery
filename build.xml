@@ -1,0 +1,143 @@
+<project basedir="." default="all" name="com.threewks.restdelivery">
+	<!-- Manifest properties -->
+	<property name="name" value="restdelivery" />
+	<property name="title" value="com.threewks.restdelivery" />
+
+	<!-- The name of application -->
+	<property name="app.name" value="com.threewks.restdelivery" />
+
+	<!-- The version of application -->
+	<property name="version" value="1.0" />
+
+	<!-- The name of web application -->
+	<property name="web.app.name" value="restdel.war" />
+
+	<property name="web.xml" value="web/WEB-INF/web.xml" />
+
+	<!-- The directory containing source code -->
+	<property name="src" value="src/main/java" />
+    <property name="src.test" value="src/test/java" />
+
+	<!-- Temporary build directory -->
+	<property name="build" value="build" />
+	<property name="dist" value="dist" />
+	<property name="dist.lib" value="dist/lib" />
+
+
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - 
+	     The directories containing required libraries
+	     - - - - - - - - - - - - - - - - - - - - - - - -  -->
+	<property name="lib.core" value="${basedir}/lib" />
+	<property name="lib.test" value="${basedir}/src/test/lib" />
+	<!--
+	Libraries required for compilation
+	-->
+	<property name="lib.tomcat" value="${basedir}/tomcat_lib" />
+
+
+	<path id="classpath">
+		<fileset dir="${lib.core}">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${lib.tomcat}">
+			<include name="*.jar" />
+
+		</fileset>
+	</path>
+
+    <path id="test.classpath">
+        <pathelement location="${build}" />
+        <fileset dir="${lib.test}">
+            <include name="**/*.jar"/>
+        </fileset>
+        <fileset dir="${lib.core}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+	<target name="all" >
+		<antcall target="test" />
+		<antcall target="build" />
+	</target>
+
+	<target name="build" depends="release, clean-after-release" />
+
+	<target name="clean">
+		<delete dir="${build}" />
+		<delete dir="${dist}" />
+	</target>
+
+	<target name="init">
+		<mkdir dir="${build}" />
+		<mkdir dir="${dist}" />
+		<mkdir dir="${dist.lib}" />
+	</target>
+
+	<target name="compile" depends="clean, init">
+		<!-- Builds required jars -->
+
+		<javac source="1.6" srcdir="${src}" destdir="${build}" debug="true" fork="true" memorymaximumsize="128m" memoryinitialsize="128m">
+			<classpath refid="classpath" />
+		</javac>
+		
+		<!--  Copy application resources  -->
+		<copy todir="${build}">
+			<fileset dir="${src}">
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="release" depends="compile">
+
+		<war warfile="${dist}/${web.app.name}" webxml="${web.xml}">
+			<classes dir="${build}"/>
+			<lib dir="${lib.core}">
+				<include name="*.jar" />
+                <exclude name="catalina.jar"/>
+			</lib>
+			<manifest>
+				<section name="${name}">
+					<attribute name="Implementation-Title" value="${title}" />
+					<attribute name="Implementation-Version" value="${version}" />
+					<attribute name="Implementation-Vendor" value="Community" />
+				</section>
+			</manifest>
+			<fileset dir="web/">
+				<exclude name="**/*.java" />
+			</fileset>
+		</war>
+
+		<copy todir="${dist.lib}">
+			<fileset dir="${lib.core}">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+	</target>
+
+    <target name="compileTest" depends="compile">
+
+        <javac source="1.6" srcdir="${src.test}" destdir="${build}" debug="true" fork="true" memorymaximumsize="128m" memoryinitialsize="128m">
+            <classpath refid="test.classpath"/>
+        </javac>
+        <copy todir="${build}">
+            <fileset dir="${src.test}">
+                <include name="db.properties" />
+            </fileset>
+        </copy>
+    </target>
+
+
+    <target name="test" depends="compileTest">
+        <junit fork="yes" haltonfailure="yes">
+            <test name="com.threewks.restdelivery.service.RestaurantsDeliveryServiceTests" />
+            <classpath refid="test.classpath" />
+        </junit>
+    </target>
+
+	<!-- Delete any created directories and their contents -->
+	<target name="clean-after-release">
+		<!--delete dir="${build}" /-->
+	</target>
+</project>
+
