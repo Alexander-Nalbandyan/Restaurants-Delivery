@@ -1,6 +1,7 @@
 package com.threewks.restdelivery.repository;
 
 import com.threewks.restdelivery.repository.entity.Restaurant;
+import com.threewks.restdelivery.repository.entity.RestaurantBlacklistedAddress;
 import com.threewks.restdelivery.repository.entity.UserAddressForRestaurant;
 
 import java.util.List;
@@ -28,7 +29,6 @@ public class RestaurantsDeliveryRepositoryImpl implements RestaurantsDeliveryRep
 
     @Override
     public Restaurant selectRestaurantInfo(Long restaurantId) {
-
         return ofy().load().type(Restaurant.class).id(restaurantId).now();
 
     }
@@ -37,5 +37,15 @@ public class RestaurantsDeliveryRepositoryImpl implements RestaurantsDeliveryRep
     public void insertUserAddressForRestaurant(UserAddressForRestaurant userAddressForRestaurant) {
         ofy().save().entity(userAddressForRestaurant).now();
 
+    }
+
+    @Override
+    public void insertRestBlacklistedAddress(RestaurantBlacklistedAddress restaurantBlacklistedAddress) {
+        ofy().save().entity(restaurantBlacklistedAddress).now();
+    }
+
+    @Override
+    public List<RestaurantBlacklistedAddress> selectRestBlacklistedAddresses(Long restaurantId) {
+        return ofy().load().type(RestaurantBlacklistedAddress.class).filter("restaurantId =", restaurantId).list();
     }
 }

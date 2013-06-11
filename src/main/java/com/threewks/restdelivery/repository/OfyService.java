@@ -4,6 +4,7 @@ import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyFactory;
 import com.googlecode.objectify.ObjectifyService;
 import com.threewks.restdelivery.repository.entity.Restaurant;
+import com.threewks.restdelivery.repository.entity.RestaurantBlacklistedAddress;
 import com.threewks.restdelivery.repository.entity.UserAddressForRestaurant;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -22,6 +23,7 @@ public class OfyService {
     static {
         factory().register(Restaurant.class);
         factory().register(UserAddressForRestaurant.class);
+        factory().register(RestaurantBlacklistedAddress.class);
 
         initializeRestSampleDB();
     }

@@ -8,6 +8,7 @@ import com.google.code.geocoder.model.GeocoderResult;
 import com.google.code.geocoder.model.LatLng;
 import com.threewks.restdelivery.repository.RestaurantsDeliveryRepositoryInterface;
 import com.threewks.restdelivery.repository.entity.Restaurant;
+import com.threewks.restdelivery.repository.entity.RestaurantBlacklistedAddress;
 import com.threewks.restdelivery.repository.entity.UserAddressForRestaurant;
 import com.threewks.restdelivery.exceptions.AddressIsOutOfDeliveryRangeException;
 import com.threewks.restdelivery.utils.LocationUtils;
@@ -79,7 +80,7 @@ public class RestaurantsDeliveryServiceImpl implements RestaurantsDeliveryServic
     }
 
     @Override
-    public void addBlacklistedAddress(String address, Double radius, Integer restaurantId) throws AddressIsOutOfDeliveryRangeException {
+    public void addBlacklistedAddress(String address, Double radius, Long restaurantId) throws AddressIsOutOfDeliveryRangeException {
         //Fetching Address physical location.
         GeocoderRequest geocoderRequest = new GeocoderRequestBuilder().setAddress(address).setLanguage("en").getGeocoderRequest();
         GeocodeResponse geocoderResponse = geocoder.geocode(geocoderRequest);
@@ -94,7 +95,50 @@ public class RestaurantsDeliveryServiceImpl implements RestaurantsDeliveryServic
         double addressLat = addressLocation.getLat().doubleValue();
         double addressLng = addressLocation.getLng().doubleValue();
 
+        RestaurantBlacklistedAddress restaurantBlacklistedAddress = new RestaurantBlacklistedAddress();
+        restaurantBlacklistedAddress.setRestaurantId(restaurantId);
+        restaurantBlacklistedAddress.setBlacklistedAddress(address);
+        restaurantBlacklistedAddress.setLatitude(addressLat);
+        restaurantBlacklistedAddress.setLongitude(addressLng);
+        restaurantBlacklistedAddress.setRadius(radius);
 
-        throw new NotImplementedException();
+        restaurantsDeliveryRep.insertRestBlacklistedAddress(restaurantBlacklistedAddress);
+
+    }
+
+    @Override
+    public boolean isAddressBlacklisted(String address, Long restaurantId) throws AddressIsOutOfDeliveryRangeException {
+        //Fetching Address physical location.
+        GeocoderRequest geocoderRequest = new GeocoderRequestBuilder().setAddress(address).setLanguage("en").getGeocoderRequest();
+        GeocodeResponse geocoderResponse = geocoder.geocode(geocoderRequest);
+        List<GeocoderResult> results = geocoderResponse.getResults();
+
+        if (results == null || results.size() == 0) {
+            throw new AddressIsOutOfDeliveryRangeException("Specified address location could not be found");
+        }
+
+        GeocoderResult geocoderResult = results.get(0);
+        LatLng addressLocation = geocoderResult.getGeometry().getLocation();
+        double addressLat = addressLocation.getLat().doubleValue();
+        double addressLng = addressLocation.getLng().doubleValue();
+
+        List<RestaurantBlacklistedAddress> restBlacklistedAddrs = restaurantsDeliveryRep.selectRestBlacklistedAddresses(restaurantId);
+
+        if (restBlacklistedAddrs.size() > 0) {
+            for (RestaurantBlacklistedAddress restBlacklistedAddr : restBlacklistedAddrs) {
+                double blackLat = restBlacklistedAddr.getLatitude();
+                double blackLng = restBlacklistedAddr.getLongitude();
+                double radius = restBlacklistedAddr.getRadius();
+
+                double distance = LocationUtils.calculateDistance(addressLat, addressLng, blackLat, blackLng, LocationUtils.DISTANCE_UNIT.MILES);
+
+                if (distance <= radius) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+
     }
 }

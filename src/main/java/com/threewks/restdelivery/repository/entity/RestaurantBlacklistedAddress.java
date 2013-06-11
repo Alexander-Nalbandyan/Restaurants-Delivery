@@ -1,5 +1,9 @@
 package com.threewks.restdelivery.repository.entity;
 
+import com.googlecode.objectify.annotation.Entity;
+import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.Index;
+
 /**
  * Created with IntelliJ IDEA.
  * User: Alexander
@@ -8,17 +12,20 @@ package com.threewks.restdelivery.repository.entity;
  *
  * Represents entity class for restaurant_blacklisted_address table.
  */
+@Entity
 public class RestaurantBlacklistedAddress {
 
     /**
      * Blacklisted address id.
      */
-    private Integer blacklistedAddressId;
+    @Id
+    private Long blacklistedAddressId;
 
     /**
      * Restaurant id.
      */
-    private Integer restaurantId;
+    @Index
+    private Long restaurantId;
 
     /**
      * Blacklisted address.
@@ -41,19 +48,19 @@ public class RestaurantBlacklistedAddress {
     private double radius;
 
 
-    public Integer getBlacklistedAddressId() {
+    public Long getBlacklistedAddressId() {
         return blacklistedAddressId;
     }
 
-    public void setBlacklistedAddressId(Integer blacklistedAddressId) {
+    public void setBlacklistedAddressId(Long blacklistedAddressId) {
         this.blacklistedAddressId = blacklistedAddressId;
     }
 
-    public Integer getRestaurantId() {
+    public Long getRestaurantId() {
         return restaurantId;
     }
 
-    public void setRestaurantId(Integer restaurantId) {
+    public void setRestaurantId(Long restaurantId) {
         this.restaurantId = restaurantId;
     }
 

@@ -29,7 +29,6 @@ public interface RestaurantsDeliveryServiceInterface {
      *
      * @throws AddressIsOutOfDeliveryRangeException     If restaurant could not deliver
      * to provided address.
-     * @throws SQLException   If there is repository problem
      */
     void saveUserAddress(String address, Long restaurantId) throws AddressIsOutOfDeliveryRangeException;
 
@@ -41,7 +40,16 @@ public interface RestaurantsDeliveryServiceInterface {
      * @param restaurantId  Restaurant id.
      *
      * @throws AddressIsOutOfDeliveryRangeException     If provided address could not be located.
-     * @throws SQLException   If there is repository problem
      */
-    void addBlacklistedAddress(String address, Double radius, Integer restaurantId) throws AddressIsOutOfDeliveryRangeException;
+    void addBlacklistedAddress(String address, Double radius, Long restaurantId) throws AddressIsOutOfDeliveryRangeException;
+
+    /**
+     * Checks whether provided address is in blacklisted area for
+     * specified restaurant or not.
+     *
+     * @param address        Address string to check.
+     * @param restaurantId   Restaurant id.
+     * @return True only if address is in blacklisted area for restaurant.
+     */
+    boolean isAddressBlacklisted(String address, Long restaurantId) throws AddressIsOutOfDeliveryRangeException;
 }

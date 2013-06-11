@@ -1,6 +1,7 @@
 package com.threewks.restdelivery.repository;
 
 import com.threewks.restdelivery.repository.entity.Restaurant;
+import com.threewks.restdelivery.repository.entity.RestaurantBlacklistedAddress;
 import com.threewks.restdelivery.repository.entity.UserAddressForRestaurant;
 
 import java.sql.SQLException;
@@ -34,9 +35,23 @@ public interface RestaurantsDeliveryRepositoryInterface {
     Restaurant selectRestaurantInfo(Long restaurantId);
 
     /**
-     * Creates new row in user_address_for_restaurant table with provided info.
+     * Creates new user address for restaurant with provided info.
      *
      * @param userAddressForRestaurant   User address info.
      */
     void insertUserAddressForRestaurant(UserAddressForRestaurant userAddressForRestaurant);
+
+    /**
+     * Creates new restaurant blacklisted address.
+     * @param restaurantBlacklistedAddress      restaurant blacklisted address.
+     */
+    void insertRestBlacklistedAddress(RestaurantBlacklistedAddress restaurantBlacklistedAddress);
+
+
+    /**
+     * Fetches restaurant blacklisted addresses.
+     * @param restaurantId      Restaurant id.
+     * @return List of restaurant blacklisted addresses.
+     */
+    List<RestaurantBlacklistedAddress> selectRestBlacklistedAddresses(Long restaurantId);
 }

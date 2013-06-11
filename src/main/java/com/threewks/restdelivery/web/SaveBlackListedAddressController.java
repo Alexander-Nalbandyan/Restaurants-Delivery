@@ -33,7 +33,7 @@ public class SaveBlackListedAddressController {
             return new JspView("pages/save-blacklisted-address.jsp", model);
     }
 
-    public JspView handlePost(String address, Integer restaurantId, Double radius) throws SQLException {
+    public JspView handlePost(String address, Long restaurantId, Double radius) throws SQLException {
         Map<String, Object> model = new HashMap<String, Object>();
         try {
             model.put("restaurants", restDeliveryService.getAllRestaurants());

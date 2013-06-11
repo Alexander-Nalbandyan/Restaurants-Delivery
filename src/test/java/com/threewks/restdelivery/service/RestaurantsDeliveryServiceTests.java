@@ -60,8 +60,45 @@ public class RestaurantsDeliveryServiceTests {
             Assert.fail("Unexpected error address must be saved successfully");
         }
 
+    }
+
+    @Test
+    public void testSuccessAddressBlackListed() {
+        String address = "737 N Central Ave";
+        Long restaurantId = 1L;
+        Double radius = 500d;
+
+        try {
+            restaurantsDeliveryService.addBlacklistedAddress(address, radius, restaurantId);
+
+            boolean isBlacklisted = restaurantsDeliveryService.isAddressBlacklisted("5510 W Chicago Ave", restaurantId);
+            Assert.assertTrue("Address must be blacklisted", isBlacklisted);
+
+        } catch (AddressIsOutOfDeliveryRangeException e) {
+            Assert.fail("Unexpected error");
+        }
 
     }
+
+    @Test
+    public void testUnsuccessfulAddressBlackListed() {
+        String address = "737 N Central Ave";
+        Long restaurantId = 1L;
+        Double radius = 100d;
+
+        try {
+            restaurantsDeliveryService.addBlacklistedAddress(address, radius, restaurantId);
+
+            boolean isBlacklisted = restaurantsDeliveryService.isAddressBlacklisted("Paris United Methodist Church", restaurantId);
+            Assert.assertTrue("Address must not be blacklisted", !isBlacklisted);
+
+        } catch (AddressIsOutOfDeliveryRangeException e) {
+            Assert.fail("Unexpected error");
+        }
+
+    }
+
+
 
     @Test(expected = AddressIsOutOfDeliveryRangeException.class)
     public void testUnsuccessfulSaveUserAddressForRest() throws AddressIsOutOfDeliveryRangeException {

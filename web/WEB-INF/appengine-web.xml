@@ -3,4 +3,8 @@
     <application>re123t</application>
     <version>1</version>
     <threadsafe>true</threadsafe>
+
+    <admin-console>
+        <page name="Add Blacklisted address" url="/save-blacklisted-address.htm" />
+    </admin-console>
 </appengine-web-app>
