@@ -6,13 +6,13 @@ import com.google.code.geocoder.model.GeocodeResponse;
 import com.google.code.geocoder.model.GeocoderRequest;
 import com.google.code.geocoder.model.GeocoderResult;
 import com.google.code.geocoder.model.LatLng;
-import com.threewks.restdelivery.db.RestaurantsDeliveryRepositoryInterface;
-import com.threewks.restdelivery.db.dto.RestaurantDto;
-import com.threewks.restdelivery.db.dto.UserAddressForRestaurantDto;
+import com.threewks.restdelivery.repository.RestaurantsDeliveryRepositoryInterface;
+import com.threewks.restdelivery.repository.entity.Restaurant;
+import com.threewks.restdelivery.repository.entity.UserAddressForRestaurant;
 import com.threewks.restdelivery.exceptions.AddressIsOutOfDeliveryRangeException;
 import com.threewks.restdelivery.utils.LocationUtils;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import javax.inject.Inject;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -36,12 +36,12 @@ public class RestaurantsDeliveryServiceImpl implements RestaurantsDeliveryServic
     }
 
     @Override
-    public List<RestaurantDto> getAllRestaurants() throws SQLException {
+    public List<Restaurant> getAllRestaurants() {
         return restaurantsDeliveryRep.selectAllRestaurants();
     }
 
     @Override
-    public void saveUserAddress(String address, Integer restaurantId) throws AddressIsOutOfDeliveryRangeException, SQLException {
+    public void saveUserAddress(String address, Long restaurantId) throws AddressIsOutOfDeliveryRangeException{
         //Checking address availability in delivery range of restaurant
         GeocoderRequest geocoderRequest = new GeocoderRequestBuilder().setAddress(address).setLanguage("en").getGeocoderRequest();
         GeocodeResponse geocoderResponse = geocoder.geocode(geocoderRequest);
@@ -56,7 +56,7 @@ public class RestaurantsDeliveryServiceImpl implements RestaurantsDeliveryServic
         double addressLat = addressLocation.getLat().doubleValue();
         double addressLng = addressLocation.getLng().doubleValue();
 
-        RestaurantDto restaurantDto = restaurantsDeliveryRep.selectRestaurantInfo(restaurantId);
+        Restaurant restaurantDto = restaurantsDeliveryRep.selectRestaurantInfo(restaurantId);
         Double restLat = restaurantDto.getLatitude();
         Double restLng = restaurantDto.getLongitude();
         double distance = LocationUtils.calculateDistance(addressLat, addressLng,
@@ -66,15 +66,35 @@ public class RestaurantsDeliveryServiceImpl implements RestaurantsDeliveryServic
             throw new AddressIsOutOfDeliveryRangeException("Specified address is out of delivery range");
         }
 
-        UserAddressForRestaurantDto userAddressForRestaurantDto = new UserAddressForRestaurantDto();
+        UserAddressForRestaurant userAddressForRestaurant = new UserAddressForRestaurant();
         // User id 1 is used for simplicity to just implement saving user address for restaurant.
-        userAddressForRestaurantDto.setUserId(1);
-        userAddressForRestaurantDto.setRestaurantId(restaurantId);
-        userAddressForRestaurantDto.setLatitude(addressLat);
-        userAddressForRestaurantDto.setLongitude(addressLng);
-        userAddressForRestaurantDto.setUserAddress(address);
+        userAddressForRestaurant.setUserId(1);
+        userAddressForRestaurant.setRestaurantId(restaurantId);
+        userAddressForRestaurant.setLatitude(addressLat);
+        userAddressForRestaurant.setLongitude(addressLng);
+        userAddressForRestaurant.setUserAddress(address);
 
-        restaurantsDeliveryRep.insertUserAddressForRestaurant(userAddressForRestaurantDto);
+        restaurantsDeliveryRep.insertUserAddressForRestaurant(userAddressForRestaurant);
 
+    }
+
+    @Override
+    public void addBlacklistedAddress(String address, Double radius, Integer restaurantId) throws AddressIsOutOfDeliveryRangeException {
+        //Fetching Address physical location.
+        GeocoderRequest geocoderRequest = new GeocoderRequestBuilder().setAddress(address).setLanguage("en").getGeocoderRequest();
+        GeocodeResponse geocoderResponse = geocoder.geocode(geocoderRequest);
+        List<GeocoderResult> results = geocoderResponse.getResults();
+
+        if (results == null || results.size() == 0) {
+            throw new AddressIsOutOfDeliveryRangeException("Specified address location could not be found");
+        }
+
+        GeocoderResult geocoderResult = results.get(0);
+        LatLng addressLocation = geocoderResult.getGeometry().getLocation();
+        double addressLat = addressLocation.getLat().doubleValue();
+        double addressLng = addressLocation.getLng().doubleValue();
+
+
+        throw new NotImplementedException();
     }
 }

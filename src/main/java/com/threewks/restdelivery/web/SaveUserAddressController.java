@@ -29,17 +29,12 @@ public class SaveUserAddressController {
     }
 
     public JspView handleGet() throws SQLException {
-        try {
             Map<String, Object> model = new HashMap<String, Object>();
             model.put("restaurants", restDeliveryService.getAllRestaurants());
             return new JspView("pages/save-user-address.jsp", model);
-        } catch (SQLException se) {
-           logger.error("Exception occurred when fetching restaurants: " + se.getMessage(), se);
-           throw se;
-        }
     }
 
-    public JspView handlePost(String address, Integer restaurantId) throws SQLException {
+    public JspView handlePost(String address, Long restaurantId) throws SQLException {
         Map<String, Object> model = new HashMap<String, Object>();
         try {
             model.put("restaurants", restDeliveryService.getAllRestaurants());
@@ -48,9 +43,6 @@ public class SaveUserAddressController {
 
             model.put("resultStatus", "success");
             return new JspView("pages/save-user-address.jsp", model);
-        } catch (SQLException se) {
-            logger.error("Exception occurred when fetching restaurants: " + se.getMessage(), se);
-            throw se;
         } catch (AddressIsOutOfDeliveryRangeException e) {
             model.put("address", address);
             model.put("restaurantId", restaurantId);

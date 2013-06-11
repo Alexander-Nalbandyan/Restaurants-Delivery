@@ -4,5 +4,9 @@
      "GET"  : "com.threewks.restdelivery.web.SaveUserAddressController.handleGet",
      "POST"  : "com.threewks.restdelivery.web.SaveUserAddressController.handlePost"
     },
+    "/save-blacklisted-address.htm"        :  {
+        "GET"  : "com.threewks.restdelivery.web.SaveBlackListedAddressController.handleGet",
+        "POST"  : "com.threewks.restdelivery.web.SaveBlackListedAddressController.handlePost"
+    },
     "/favicon.ico": "static"
 }

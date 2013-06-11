@@ -1,11 +1,12 @@
 package com.threewks.restdelivery.service;
 
+import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
+import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.code.geocoder.Geocoder;
-import com.threewks.restdelivery.DBConnector;
-import com.threewks.restdelivery.db.RestaurantsDeliveryRepositoryImpl;
-import com.threewks.restdelivery.db.RestaurantsDeliveryRepositoryInterface;
+import com.threewks.restdelivery.repository.RestaurantsDeliveryRepositoryImpl;
+import com.threewks.restdelivery.repository.RestaurantsDeliveryRepositoryInterface;
 import com.threewks.restdelivery.exceptions.AddressIsOutOfDeliveryRangeException;
-import com.threewks.restdelivery.utils.DBUtils;
+import com.threewks.restdelivery.repository.entity.UserAddressForRestaurant;
 import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
@@ -13,102 +14,66 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import static com.threewks.restdelivery.repository.OfyService.ofy;
 
 /**
  * Created with IntelliJ IDEA.
  * User: Alexander
  * Date: 6/9/13
  * Time: 10:24 PM
- *
+ * <p/>
  * Contains tests for RestaurantDeliveryService.
  */
 @RunWith(BlockJUnit4ClassRunner.class)
 public class RestaurantsDeliveryServiceTests {
 
+    private final LocalServiceTestHelper helper = new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
+
     private RestaurantsDeliveryServiceInterface restaurantsDeliveryService;
 
     @Before
     public void prepare() {
-        RestaurantsDeliveryRepositoryInterface restDeliveryRep = new RestaurantsDeliveryRepositoryImpl(DBConnector.getDataSource());
+        helper.setUp();
+
+
+        RestaurantsDeliveryRepositoryInterface restDeliveryRep = new RestaurantsDeliveryRepositoryImpl();
         Geocoder geocoder = new Geocoder();
         this.restaurantsDeliveryService = new RestaurantsDeliveryServiceImpl(restDeliveryRep, geocoder);
     }
 
     @Test
     public void testSuccessSaveUserAddressForRest() {
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
+        String address = "737 N Central Ave";
+        Long restaurantId = 1L;
 
         try {
-            String address = "737 N Central Ave";
-            int restaurantId = 1;
             restaurantsDeliveryService.saveUserAddress(address, restaurantId);
-            connection = DBConnector.getConnection();
-            preparedStatement = connection.prepareStatement("SELECT restaurant_id,user_address  FROM user_address_for_restaurant WHERE user_address = ?");
-            preparedStatement.setString(1, address);
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            if (resultSet.next()) {
-                Assert.assertEquals("Saved restaurant id didn't match", restaurantId, resultSet.getInt(1));
-                Assert.assertEquals("Saved address didn't match", address, resultSet.getString(2));
+            UserAddressForRestaurant userAddressForRestaurant = ofy().load().type(UserAddressForRestaurant.class).first().now();
+            if (userAddressForRestaurant != null) {
+                Assert.assertEquals("Saved restaurant id didn't match", restaurantId, userAddressForRestaurant.getRestaurantId());
+                Assert.assertEquals("Saved address didn't match", address, userAddressForRestaurant.getUserAddress());
             } else {
-                Assert.fail("User Address Was not save for restaurant");
+                Assert.fail("User Address Was not saved for restaurant");
             }
+
         } catch (AddressIsOutOfDeliveryRangeException e) {
             Assert.fail("Unexpected error address must be saved successfully");
-        } catch (SQLException e) {
-            Assert.fail("Unexpected error address must be saved successfully");
-        } finally {
-            DBUtils.closeAll(null, preparedStatement, connection);
         }
+
 
     }
 
     @Test(expected = AddressIsOutOfDeliveryRangeException.class)
-    public void testUnsuccessfulSaveUserAddressForRest() throws AddressIsOutOfDeliveryRangeException, SQLException {
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-
-
-        try {
-            String address = "Paris, France";
-            int restaurantId = 1;
-            restaurantsDeliveryService.saveUserAddress(address, restaurantId);
-            connection = DBConnector.getConnection();
-
-            preparedStatement = connection.prepareStatement("SELECT restaurant_id,user_address  FROM user_address_for_restaurant WHERE user_address = ?");
-            preparedStatement.setString(1, address);
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            if (resultSet.next()) {
-                Assert.fail("User Address Was saved in the database");
-            }
-        } catch (SQLException e) {
-            Assert.fail("Unexpected error for unsuccessful save");
-        } finally {
-            DBUtils.closeAll(null, preparedStatement, connection);
-        }
-
-
+    public void testUnsuccessfulSaveUserAddressForRest() throws AddressIsOutOfDeliveryRangeException {
+        String address = "Paris, France";
+        Long restaurantId = 1L;
+        restaurantsDeliveryService.saveUserAddress(address, restaurantId);
+        Assert.fail("Save user address must throw Address is out of delivery range exception");
     }
 
     @After
     public void cleanup() {
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        try {
-            connection = DBConnector.getConnection();
-            preparedStatement = connection.prepareStatement("DELETE FROM user_address_for_restaurant");
-            preparedStatement.execute();
-        } catch (SQLException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } finally {
-            DBUtils.closeAll(null, preparedStatement, connection);
-        }
+        helper.tearDown();
     }
 
 }

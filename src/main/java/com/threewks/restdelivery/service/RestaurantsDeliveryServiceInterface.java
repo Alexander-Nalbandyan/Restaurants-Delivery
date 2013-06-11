@@ -1,6 +1,6 @@
 package com.threewks.restdelivery.service;
 
-import com.threewks.restdelivery.db.dto.RestaurantDto;
+import com.threewks.restdelivery.repository.entity.Restaurant;
 import com.threewks.restdelivery.exceptions.AddressIsOutOfDeliveryRangeException;
 
 import java.sql.SQLException;
@@ -19,9 +19,8 @@ public interface RestaurantsDeliveryServiceInterface {
      * Returns list of all registered restaurants in the system.
      *
      * @return  List of restaurants.
-     * @throws SQLException     When there is repository problem.
      */
-    public List<RestaurantDto> getAllRestaurants() throws SQLException;
+    public List<Restaurant> getAllRestaurants();
 
     /**
      * Save user address for provided restaurant.
@@ -32,5 +31,17 @@ public interface RestaurantsDeliveryServiceInterface {
      * to provided address.
      * @throws SQLException   If there is repository problem
      */
-    void saveUserAddress(String address, Integer restaurantId) throws AddressIsOutOfDeliveryRangeException, SQLException;
+    void saveUserAddress(String address, Long restaurantId) throws AddressIsOutOfDeliveryRangeException;
+
+
+    /**
+     * Add new blacklisted address for provided restaurant.
+     * @param address       Blacklisted address.
+     * @param radius        Blacklisted address radius.
+     * @param restaurantId  Restaurant id.
+     *
+     * @throws AddressIsOutOfDeliveryRangeException     If provided address could not be located.
+     * @throws SQLException   If there is repository problem
+     */
+    void addBlacklistedAddress(String address, Double radius, Integer restaurantId) throws AddressIsOutOfDeliveryRangeException;
 }

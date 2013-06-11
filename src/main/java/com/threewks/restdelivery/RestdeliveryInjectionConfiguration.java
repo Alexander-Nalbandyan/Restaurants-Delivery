@@ -1,23 +1,18 @@
 package com.threewks.restdelivery;
 
 import com.google.code.geocoder.Geocoder;
-import com.threewks.restdelivery.db.RestaurantsDeliveryRepositoryImpl;
-import com.threewks.restdelivery.db.RestaurantsDeliveryRepositoryInterface;
+import com.googlecode.objectify.ObjectifyService;
+import com.threewks.restdelivery.repository.RestaurantsDeliveryRepositoryImpl;
+import com.threewks.restdelivery.repository.RestaurantsDeliveryRepositoryInterface;
+import com.threewks.restdelivery.repository.entity.UserAddressForRestaurant;
 import com.threewks.restdelivery.service.RestaurantsDeliveryServiceImpl;
 import com.threewks.restdelivery.service.RestaurantsDeliveryServiceInterface;
 import com.threewks.thundr.injection.InjectionConfiguration;
 import com.threewks.thundr.injection.UpdatableInjectionContext;
 import org.apache.commons.dbcp.*;
-import org.apache.commons.pool.ObjectPool;
-import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.log4j.Logger;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 /**
  * Created with IntelliJ IDEA.
@@ -33,40 +28,15 @@ public class RestdeliveryInjectionConfiguration implements InjectionConfiguratio
 
     @Override
     public void configure(UpdatableInjectionContext updatableInjectionContext) {
-        //Database datasource injection
-        String dbUrl = updatableInjectionContext.get(String.class, "db_url");
-        String dbUser = updatableInjectionContext.get(String.class, "db_user");
-        String dbPass = updatableInjectionContext.get(String.class, "db_password");
-        DataSource dataSource = setUpDataSource(dbUrl, dbUser, dbPass);
 
-        updatableInjectionContext.inject(dataSource).as(DataSource.class);
         updatableInjectionContext.inject(RestaurantsDeliveryRepositoryImpl.class).as(RestaurantsDeliveryRepositoryInterface.class);
         updatableInjectionContext.inject(RestaurantsDeliveryServiceImpl.class).as(RestaurantsDeliveryServiceInterface.class);
 
         Geocoder geocoder = new Geocoder();
         updatableInjectionContext.inject(geocoder).as(Geocoder.class);
-    }
-
-    private DataSource setUpDataSource(String dbUrl, String dbUser, String dbPass) {
-        //Data source configuration.
-        BasicDataSource dbDataSource = new BasicDataSource();
-        try {
-
-
-            dbDataSource.setDriverClassName("com.mysql.jdbc.Driver");
-            dbDataSource.setUrl(dbUrl);
-            dbDataSource.setUsername(dbUser);
-            dbDataSource.setPassword(dbPass);
-            dbDataSource.setInitialSize(2);
-            dbDataSource.setMaxActive(5);
-            dbDataSource.setValidationQuery("SELECT 1");
-        }   catch (Throwable e) {
-            logger.error("Could not initialize db data source");
-        }
-
-        return dbDataSource;
 
     }
+
 
 
 
